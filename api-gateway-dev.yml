@@ -1,0 +1,26 @@
+server:
+  port: 8080
+  
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: seriesRoute 
+          uri: http://localhost:8082/ 
+          predicates: 
+            - Path=/series/**
+        
+        - id: moviesRoute 
+          uri: http://localhost:8084/ 
+          predicates: 
+            - Path=/movies/**
+            
+        - id: catalogsRoute 
+          uri: http://localhost:8086/ 
+          predicates: 
+            - Path=/catalogs/**
+       
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
