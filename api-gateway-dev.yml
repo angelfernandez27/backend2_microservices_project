@@ -1,26 +1,42 @@
 server:
   port: 8080
-  
+
 spring:
   cloud:
     gateway:
+      default-filters:
+        - name: LoggingFilter
       routes:
-        - id: seriesRoute 
-          uri: http://localhost:8082/ 
-          predicates: 
-            - Path=/series/**
-        
-        - id: moviesRoute 
-          uri: http://localhost:8084/ 
-          predicates: 
+        - id: movieRoute
+          uri: lb://movie-service
+          predicates:
             - Path=/movies/**
-            
-        - id: catalogsRoute 
-          uri: http://localhost:8086/ 
-          predicates: 
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: moviesService
+                fallbackUri: forward:/fallback/movies
+        - id: catalogRoute
+          uri: lb://catalog-service
+          predicates:
             - Path=/catalogs/**
-       
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: catalogService
+                fallbackUri: forward:/fallback/catalogs
+        - id: seriesRoute
+          uri: lb://series-service
+          predicates:
+            - Path=/series/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: seriesService
+                fallbackUri: forward:/fallback/series
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: 1.0.0
+    description: API Gateway
